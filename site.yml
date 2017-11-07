@@ -1,0 +1,45 @@
+---
+- hosts: vagrants
+  user: vagrant
+  sudo: yes
+
+  vars:
+    python_ver: 3.6.0
+
+  tasks:
+    - block:
+      - debug: msg="--------------- block start ---------------"
+      - name: yum install with_items
+        yum:
+          name: '{{item.name}}'
+          state: latest
+        register: RESULT
+        with_items:
+          - name: zsh
+          - name: vim
+          - name: git
+
+      - name: results
+        debug: var=RESULT.results
+
+      - name: git clone pyenv
+        git:
+          repo: '{{item.repo}}'
+          dest: '{{item.dest}}'
+        register: RESULT
+        with_items:
+          - repo: git://github.com/yyuu/pyenv.git
+            dest: ~/.pyenv
+
+      - name: setting shell
+        shell: '{{item.cmd}}'
+        register: RESULT
+        with_items:
+          - cmd: chsh -s '/bin/zsh' vagrant
+          - cmd: cp ~/.zshrc ~/vagrant/.zshrc
+
+# https://knowledge.sakura.ad.jp/2882/
+# https://qiita.com/waterada/items/4e64cc6f810a92001c95
+# https://qiita.com/hana_shin/items/657a5cff495244465482
+# http://www.yoheim.net/blog.php?q=20170204
+# https://qiita.com/tbuchi888/items/d44d15dcc6f63ae440d9
